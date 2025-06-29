@@ -24,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-
+<meta name="referrer" content="unsafe-url"></meta>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
