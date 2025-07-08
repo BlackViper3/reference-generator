@@ -1,8 +1,9 @@
 "use client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ChangeEvent, useEffect } from "react";
+import { ChangeEvent, useCallback, useEffect } from "react";
 import axios from "axios";
-import { useImmer } from "use-immer";
+import { useImmer, useImmerReducer } from "use-immer";
+
 const SearchReferenceBox = () => {
   const searchTypes = ["Website", "Journal", "Paper"];
   const searchTypeToSourceId = {
@@ -10,19 +11,74 @@ const SearchReferenceBox = () => {
     Journal: "article_journal",
     Paper: "paper",
   };
+
   const [searchQuery, updateSearchQuery] = useImmer({
     searchString: "",
     limit: 10,
-    searchType: "Website",
+    searchType: "Journal",
   });
+  const [searchResults, updateSearchResults] = useImmer([]);
+  const [error, setError] = useImmer("");
+
+  const [displayResult, setDisplayResult] = useImmer(false);
+
+  const [references, dispatch] = useImmerReducer((draft, action) => {
+    switch (action.type) {
+      case "add":
+        draft.push(action.result);
+        break;
+      default:
+        break;
+    }
+  }, []);
+
+  const handleResultSelection = (e, result) => {
+    result = { ...result, id: references.length + 1 };
+    handleAdd(result);
+  };
+
+  const handleAdd = useCallback((result) => {
+    dispatch({
+      type: "add",
+      result: result,
+    });
+  }, []);
+
+  const validateSearchString = (searchQuery: any) => {
+    const trimmed = searchQuery.searchString && searchQuery.searchString.trim();
+
+    if (trimmed.length === 0) {
+      setError("Search query is empty");
+      return false;
+    }
+    if (searchQuery.searchType === "Website") {
+      const urlPattern = /^(https?:\/\/[^\s]+)$/i;
+      if (urlPattern.test(searchQuery.searchString)) {
+        setError("Only valid http:// or https:// URLs are allowed.");
+        return false;
+      }
+    } else {
+      const sanitized = trimmed.replace(/<\/?[^>]+(>|$)/g, "");
+
+      updateSearchQuery((draft) => {
+        draft["searchString"] = sanitized;
+      });
+      return true;
+    }
+
+    return false;
+  };
+
   const searchForReferences = (e) => {
     e.preventDefault();
-    if (searchQuery.searchString) {
+    if (validateSearchString(searchQuery)) {
       const sourceId = searchTypeToSourceId[searchQuery.searchType];
       const searchQueryString = encodeURIComponent(searchQuery.searchString);
       const searchUrl = `/api/autocite/search?q=${searchQueryString}&sourceId=${sourceId}`;
       axios.get(searchUrl).then((response) => {
-        console.log(response.data[0]);
+        if (response.status === 200 && response.data.status === "ok") {
+          updateSearchResults(response.data.results);
+        }
       });
     }
   };
@@ -31,6 +87,7 @@ const SearchReferenceBox = () => {
       updateSearchQuery((draft) => {
         draft[e.target.name] = e.target.value;
       });
+      setError("");
     }
   };
 
@@ -40,14 +97,30 @@ const SearchReferenceBox = () => {
         <input
           type="radio"
           id={searchType}
+          className="radio radio-xs radio-primary"
           name="searchType"
-          value={searchType}
+          value={searchQuery.searchType}
           onChange={(e) => handleSearchQueryChange(e)}
+          defaultChecked={searchType === "Journal"}
         />
-        <label htmlFor={searchType}>{searchType}</label>
+        <label htmlFor={searchType} className="text-xl">
+          {searchType}
+        </label>
       </div>
     );
   });
+
+  const renderSearchResults =
+    searchResults != null &&
+    searchResults.map((result) => {
+      return (
+        <li className="inline px-3" key={result.rv}>
+          <h2 role="button" onClick={(e) => handleResultSelection(e, result)}>
+            {result?.metadata?.title}
+          </h2>
+        </li>
+      );
+    });
 
   return (
     <div>
@@ -71,12 +144,26 @@ const SearchReferenceBox = () => {
           type="button"
           value="Search"
           name="search"
+          popoverTarget="popover-1"
+          tabIndex={0}
+          role="button"
           onClick={(e) => searchForReferences(e)}
         >
           Search
         </button>
       </div>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {searchResults?.length > 0 && (
+        <div>
+          <ul className="rounded-box z-1 w-100  p-2 shadow-sm">
+            {renderSearchResults}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
 export default SearchReferenceBox;
+function validateSearchString(searchString: string) {
+  throw new Error("Function not implemented.");
+}
