@@ -8,7 +8,7 @@ import { addReference } from "../../features/references/referenceSlice";
 const SearchReferenceBox = () => {
   const searchTypes = ["Website", "Journal", "Paper"];
   const searchTypeToSourceId = {
-    Website: "website",
+    Website: "webpage",
     Journal: "article_journal",
     Paper: "paper",
   };
@@ -25,7 +25,7 @@ const SearchReferenceBox = () => {
 
   const [displayResult, setDisplayResult] = useImmer(false);
 
-  const references = useSelector((state: any) => state.reference.value);
+  
   const dispatch = useDispatch();
 
   const handleResultSelection = (e, result) => {
@@ -49,10 +49,11 @@ const SearchReferenceBox = () => {
     }
     if (searchQuery.searchType === "Website") {
       const urlPattern = /^(https?:\/\/[^\s]+)$/i;
-      if (urlPattern.test(searchQuery.searchString)) {
+      if (!urlPattern.test(searchQuery.searchString)) {
         setError("Only valid http:// or https:// URLs are allowed.");
         return false;
       }
+      return true;
     } else {
       const sanitized = trimmed.replace(/<\/?[^>]+(>|$)/g, "");
 
@@ -95,7 +96,7 @@ const SearchReferenceBox = () => {
           id={searchType}
           className="radio radio-xs radio-primary"
           name="searchType"
-          value={searchQuery.searchType}
+          value={searchType}
           onChange={(e) => handleSearchQueryChange(e)}
           defaultChecked={searchType === "Journal"}
         />
