@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -14,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Reference Generator",
-  description: "A Website to help researchers keep track of the references they use",
+  description:
+    "A Website to help researchers keep track of the references they use",
 };
 
 export default function RootLayout({
@@ -24,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-<meta name="referrer" content="unsafe-url"></meta>
+      <meta name="referrer" content="unsafe-url"></meta>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

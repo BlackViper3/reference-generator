@@ -3,7 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ChangeEvent, useCallback, useEffect } from "react";
 import axios from "axios";
 import { useImmer, useImmerReducer } from "use-immer";
-
+import { useSelector, useDispatch } from "react-redux";
+import { addReference } from "../../features/references/referenceSlice";
 const SearchReferenceBox = () => {
   const searchTypes = ["Website", "Journal", "Paper"];
   const searchTypeToSourceId = {
@@ -17,32 +18,27 @@ const SearchReferenceBox = () => {
     limit: 10,
     searchType: "Journal",
   });
+  const [currentSection, setCurrentSection] = useImmer("Introduction");
+
   const [searchResults, updateSearchResults] = useImmer([]);
   const [error, setError] = useImmer("");
 
   const [displayResult, setDisplayResult] = useImmer(false);
 
-  const [references, dispatch] = useImmerReducer((draft, action) => {
-    switch (action.type) {
-      case "add":
-        draft.push(action.result);
-        break;
-      default:
-        break;
-    }
-  }, []);
+  const references = useSelector((state: any) => state.reference.value);
+  const dispatch = useDispatch();
 
   const handleResultSelection = (e, result) => {
-    result = { ...result, id: references.length + 1 };
-    handleAdd(result);
-  };
+    // result = { ...result, id: references.length + 1 };
 
-  const handleAdd = useCallback((result) => {
-    dispatch({
-      type: "add",
-      result: result,
-    });
-  }, []);
+    const dataToAdd = {
+      name: currentSection,
+      type: searchQuery.searchType,
+      ...result,
+    };
+    dispatch(addReference(dataToAdd));
+    // handleAdd(result);
+  };
 
   const validateSearchString = (searchQuery: any) => {
     const trimmed = searchQuery.searchString && searchQuery.searchString.trim();
