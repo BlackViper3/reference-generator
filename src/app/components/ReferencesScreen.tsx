@@ -11,9 +11,16 @@ const ReferenceScreen = () => {
     for (const author in metadata.authors) {
       if (!singleAuthor) authorString += " and ";
       singleAuthor = false;
-      authorString += author.family;
-      if (author.given) {
-        authorString += author.given.charAt(0);
+
+      if (!author.family && !author.given) {
+        authorString += author.literal;
+      } else if (author.family) {
+        authorString += author.family + ",";
+        if (author.given) {
+          authorString += author.given.charAt(0) + ".";
+        }
+      } else {
+        authorString = "Unknown";
       }
     }
     let doi = `https://doi.org/${metadata.doi}`;
@@ -32,16 +39,51 @@ const ReferenceScreen = () => {
     );
   };
 
+  const populateBook = (ref) => {
+    let metadata = ref.metadata;
+    let singleAuthor = true;
+    let authorString = "";
+    for (const author in metadata.authors) {
+      if (!singleAuthor) authorString += " and ";
+      singleAuthor = false;
+
+      if (!author.family && !author.given) {
+        authorString += author.literal;
+      } else if (author.family) {
+        authorString += author.family + ",";
+        if (author.given) {
+          authorString += author.given.charAt(0) + ".";
+        }
+      } else {
+        authorString = "Unknown";
+      }
+    }
+    let url = metadata.url;
+    let date = new Date();
+    let formattedDate = date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    return (
+      <p>
+        <strong>{authorString}</strong> ({metadata.issued.year})
+        <em>{metadata.title}</em>. 
+        <strong>{metadata.publisherPlace}:  </strong>({metadata.publisher}).{" "}
+      </p>
+    );
+  };
+
   const populateWebsite = (ref) => {
     let metadata = ref.metadata;
 
     let url = metadata.url;
     let date = new Date();
-  let formattedDate = date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+    let formattedDate = date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
     return (
       <p>
         <strong>{metadata.title}</strong> ({metadata.issued.year})
@@ -69,6 +111,7 @@ const ReferenceScreen = () => {
               <div>
                 {reference.type === "Journal" && populateJournal(reference)}
                 {reference.type === "Website" && populateWebsite(reference)}
+                {reference.type === "Book" && populateBook(reference)}
               </div>
             </div>
           </div>

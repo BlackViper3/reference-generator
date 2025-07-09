@@ -6,11 +6,11 @@ import { useImmer, useImmerReducer } from "use-immer";
 import { useSelector, useDispatch } from "react-redux";
 import { addReference } from "../../features/references/referenceSlice";
 const SearchReferenceBox = () => {
-  const searchTypes = ["Website", "Journal", "Paper"];
+  const searchTypes = ["Journal", "Website", "Book"];
   const searchTypeToSourceId = {
     Website: "webpage",
     Journal: "article_journal",
-    Paper: "paper",
+    Book: "book",
   };
 
   const [searchQuery, updateSearchQuery] = useImmer({
@@ -25,7 +25,6 @@ const SearchReferenceBox = () => {
 
   const [displayResult, setDisplayResult] = useImmer(false);
 
-  
   const dispatch = useDispatch();
 
   const handleResultSelection = (e, result) => {
@@ -42,19 +41,22 @@ const SearchReferenceBox = () => {
 
   const validateSearchString = (searchQuery: any) => {
     const trimmed = searchQuery.searchString && searchQuery.searchString.trim();
-
+    const urlPattern = /^(https?:\/\/[^\s]+)$/i;
     if (trimmed.length === 0) {
       setError("Search query is empty");
       return false;
     }
     if (searchQuery.searchType === "Website") {
-      const urlPattern = /^(https?:\/\/[^\s]+)$/i;
       if (!urlPattern.test(searchQuery.searchString)) {
         setError("Only valid http:// or https:// URLs are allowed.");
         return false;
       }
       return true;
     } else {
+      if (urlPattern.test(searchQuery.searchString)) {
+        setError("Use Website for  http:// or https:// URLs.");
+        return false;
+      }
       const sanitized = trimmed.replace(/<\/?[^>]+(>|$)/g, "");
 
       updateSearchQuery((draft) => {
@@ -133,21 +135,23 @@ const SearchReferenceBox = () => {
           name="searchString"
           placeholder="Enter Search String"
           onChange={(e) => handleSearchQueryChange(e)}
-          className="border-2 rounded-xs border-s-violet-300 m-3 px-1 form-icon-search"
+          className="border-2 rounded-xs border-s-violet-300 m-3 px-1"
         />
 
-        <button
-          className="solid rounded bg-blue-400 p-1"
-          type="button"
-          value="Search"
-          name="search"
-          popoverTarget="popover-1"
-          tabIndex={0}
-          role="button"
-          onClick={(e) => searchForReferences(e)}
-        >
-          Search
-        </button>
+        <div className="solid rounded bg-blue-400 p-1 ">
+          <button
+            className="form-icon-search "
+            type="button"
+            value="Search"
+            name="search"
+            popoverTarget="popover-1"
+            tabIndex={0}
+            role="button"
+            onClick={(e) => searchForReferences(e)}
+          >
+            Search
+          </button>
+        </div>
       </div>
       {error && <p style={{ color: "red" }}>{error}</p>}
       {searchResults?.length > 0 && (
