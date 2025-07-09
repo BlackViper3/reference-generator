@@ -207,6 +207,7 @@ const SearchReferenceBox = () => {
           name="searchString"
           placeholder="Enter Search String"
           onChange={(e) => handleSearchQueryChange(e)}
+          value={searchQuery.searchString}
           className="border-2 rounded-xs border-s-violet-300 m-3 px-1"
         />
 

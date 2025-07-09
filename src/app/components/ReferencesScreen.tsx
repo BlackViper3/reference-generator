@@ -64,30 +64,36 @@ const ReferenceScreen = () => {
     );
   };
   const renderReferences = () => {
+    
     const allReferenceCards = [];
 
-    for (const sectionKey in references) {
-      const section = references[sectionKey];
-      for (const entryId in section.entries) {
-        const reference = section.entries[entryId];
+    for (const [sectionKey, section] of Object.entries(references)) {
+      
+      const entriesArray = Object.entries(section.entries);
+      if (entriesArray.length === 0) continue;
 
-        allReferenceCards.push(
-          <div className="card w-96  card-sm shadow-sm" key={entryId}>
-            <div className="card-body">
-              <h2 className="card-title">{reference.metadata.title}</h2>
-              <div>
-                {reference.type === "Journal" && populateJournal(reference)}
-                {reference.type === "Website" && populateWebsite(reference)}
-                {reference.type === "Book" && populateBook(reference)}
+      allReferenceCards.push(
+        <div key={sectionKey}>
+          <h2 className="text-xl font-bold mb-2">{section.name}</h2>
+          {entriesArray.map(([entryId, reference]) => (
+            <div className="card w-96 card-sm shadow-sm mb-2" key={entryId}>
+              <div className="card-body">
+                <h3 className="card-title">{reference.metadata.title}</h3>
+                <div>
+                  {reference.type === "Journal" && populateJournal(reference)}
+                  {reference.type === "Website" && populateWebsite(reference)}
+                  {reference.type === "Book" && populateBook(reference)}
+                </div>
               </div>
             </div>
-          </div>
-        );
-      }
+          ))}
+        </div>
+      );
     }
 
     return allReferenceCards;
   };
+
   return <div>{renderReferences()}</div>;
 };
 

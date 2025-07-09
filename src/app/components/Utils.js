@@ -8,7 +8,7 @@ const createAuthorsList = (authors) => {
     }
 
     for (const author of authors) {
-        console.log(author);
+        
         if (!singleAuthor) authorString += " and ";
         singleAuthor = false;
 
