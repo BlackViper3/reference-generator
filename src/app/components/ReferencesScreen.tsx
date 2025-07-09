@@ -1,28 +1,12 @@
 import { useSelector } from "react-redux";
+import { createAuthorsList } from "./Utils";
 
 const ReferenceScreen = () => {
   const references = useSelector((state: any) => state.reference);
 
   const populateJournal = (ref) => {
     let metadata = ref.metadata;
-
-    let singleAuthor = true;
-    let authorString = "";
-    for (const author in metadata.authors) {
-      if (!singleAuthor) authorString += " and ";
-      singleAuthor = false;
-
-      if (!author.family && !author.given) {
-        authorString += author.literal;
-      } else if (author.family) {
-        authorString += author.family + ",";
-        if (author.given) {
-          authorString += author.given.charAt(0) + ".";
-        }
-      } else {
-        authorString = "Unknown";
-      }
-    }
+    let authorString = createAuthorsList(metadata.author);
     let doi = `https://doi.org/${metadata.doi}`;
 
     return (
@@ -41,23 +25,7 @@ const ReferenceScreen = () => {
 
   const populateBook = (ref) => {
     let metadata = ref.metadata;
-    let singleAuthor = true;
-    let authorString = "";
-    for (const author in metadata.authors) {
-      if (!singleAuthor) authorString += " and ";
-      singleAuthor = false;
-
-      if (!author.family && !author.given) {
-        authorString += author.literal;
-      } else if (author.family) {
-        authorString += author.family + ",";
-        if (author.given) {
-          authorString += author.given.charAt(0) + ".";
-        }
-      } else {
-        authorString = "Unknown";
-      }
-    }
+    let authorString = createAuthorsList(metadata.author);
     let url = metadata.url;
     let date = new Date();
     let formattedDate = date.toLocaleDateString("en-GB", {
@@ -68,15 +36,14 @@ const ReferenceScreen = () => {
     return (
       <p>
         <strong>{authorString}</strong> ({metadata.issued.year})
-        <em>{metadata.title}</em>. 
-        <strong>{metadata.publisherPlace}:  </strong>({metadata.publisher}).{" "}
+        <em>{metadata.title}</em>.<strong>{metadata.publisherPlace}: </strong>(
+        {metadata.publisher}).{" "}
       </p>
     );
   };
 
   const populateWebsite = (ref) => {
     let metadata = ref.metadata;
-
     let url = metadata.url;
     let date = new Date();
     let formattedDate = date.toLocaleDateString("en-GB", {

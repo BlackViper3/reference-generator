@@ -5,6 +5,7 @@ import axios from "axios";
 import { useImmer, useImmerReducer } from "use-immer";
 import { useSelector, useDispatch } from "react-redux";
 import { addReference } from "../../features/references/referenceSlice";
+import { createAuthorsList } from "./Utils";
 const SearchReferenceBox = () => {
   const searchTypes = ["Journal", "Website", "Book"];
   const searchTypeToSourceId = {
@@ -21,6 +22,7 @@ const SearchReferenceBox = () => {
   const [currentSection, setCurrentSection] = useImmer("Introduction");
 
   const [searchResults, updateSearchResults] = useImmer([]);
+  const [showSearchResults, updateShowSearchResults] = useImmer(false);
   const [error, setError] = useImmer("");
 
   const [displayResult, setDisplayResult] = useImmer(false);
@@ -36,7 +38,15 @@ const SearchReferenceBox = () => {
       ...result,
     };
     dispatch(addReference(dataToAdd));
-    // handleAdd(result);
+    clearSearchResults();
+  };
+
+  const clearSearchResults = () => {
+    updateSearchResults([]);
+    updateShowSearchResults(false);
+    updateSearchQuery((draft) => {
+      draft["searchString"] = "";
+    });
   };
 
   const validateSearchString = (searchQuery: any) => {
@@ -77,6 +87,7 @@ const SearchReferenceBox = () => {
       axios.get(searchUrl).then((response) => {
         if (response.status === 200 && response.data.status === "ok") {
           updateSearchResults(response.data.results);
+          updateShowSearchResults(true);
         }
       });
     }
@@ -109,14 +120,75 @@ const SearchReferenceBox = () => {
     );
   });
 
+  const populateJournalSearchResult = (ref) => {
+    let metadata = ref.metadata;
+
+    let authorString = createAuthorsList(metadata.author);
+    return (
+      <p>
+        <em>By </em>
+        <span>{authorString}</span> <em>| Year: </em>{" "}
+        <span>{metadata.issued.year} </span>
+        <em>| Container: </em> <span>{metadata.containerTitle} </span>
+        <em>| Volume: </em> <span>{metadata.volume} </span>
+        <em>| Issue: </em> <span>{metadata.issue} </span>
+        <em>| Page: </em> <span>{metadata.page} </span>
+        <em>| DOI: </em> <span>{metadata.doi} </span>
+      </p>
+    );
+  };
+
+  const populateBookSearchResult = (ref) => {
+    let metadata = ref.metadata;
+    let authorString = createAuthorsList(metadata.author);
+    return (
+      <p>
+        <em>By </em>
+        <span>{authorString}</span> <em>| Year: </em>{" "}
+        <span>{metadata.issued.year} </span>
+        <em>| Publisher: </em> <span>{metadata.publisher} </span>
+        <em>| Publisher Place: </em> <span>{metadata.publisherPlace} </span>
+        <em>| ISBN: </em> <span>{metadata.isbn} </span>
+      </p>
+    );
+  };
+
+  const populateWebsiteSearchResult = (ref) => {
+    let metadata = ref.metadata;
+    let authorString = createAuthorsList(metadata.author);
+    return (
+      <p>
+        <em>By </em>
+        <span>{authorString}</span> <em>| Container: </em>{" "}
+        <span>{metadata.containerTitle}</span>
+        <em>| URL: </em> <span>{metadata.url}</span>
+      </p>
+    );
+  };
+
   const renderSearchResults =
     searchResults != null &&
     searchResults.map((result) => {
+      const formattedResult =
+        searchQuery.searchType === "Journal"
+          ? populateJournalSearchResult(result)
+          : searchQuery.searchType === "Book"
+          ? populateBookSearchResult(result)
+          : searchQuery.searchType === "Website"
+          ? populateWebsiteSearchResult(result)
+          : "";
       return (
         <li className="inline px-3" key={result.rv}>
-          <h2 role="button" onClick={(e) => handleResultSelection(e, result)}>
-            {result?.metadata?.title}
-          </h2>
+          <div className="hover:bg-gray-200">
+            <h2
+              role="button"
+              onClick={(e) => handleResultSelection(e, result)}
+              className=""
+            >
+              {result?.metadata?.title}
+            </h2>
+            {formattedResult}
+          </div>
         </li>
       );
     });
@@ -154,9 +226,9 @@ const SearchReferenceBox = () => {
         </div>
       </div>
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {searchResults?.length > 0 && (
+      {searchResults?.length > 0 && showSearchResults && (
         <div>
-          <ul className="rounded-box z-1 w-100  p-2 shadow-sm">
+          <ul className="rounded-box z-1 w-100  p-2 shadow-sm ">
             {renderSearchResults}
           </ul>
         </div>
