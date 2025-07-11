@@ -3,6 +3,8 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { Provider } from "react-redux";
 import store from "../store";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 library.add(faSearch);
 
@@ -20,8 +22,9 @@ export default function Home() {
           className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start"
         >
           <SearchReferenceBox />
-
-          <ReferenceScreen />
+          <DndProvider backend={HTML5Backend}>
+            <ReferenceScreen />
+          </DndProvider>
         </main>
         <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center"></footer>
       </div>
