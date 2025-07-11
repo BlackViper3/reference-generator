@@ -33,6 +33,18 @@ body {
   background-size: 20px;
 }
 
+.form-icon-copy {
+  padding-right: 25px;
+  background: url("../../public/copy-icon.svg") no-repeat right ;
+  background-size: 20px;
+}
+
+.form-icon-download {
+  padding-right: 25px;
+  background: url("../../public/download-icon.svg") no-repeat right ;
+  background-size: 20px;
+}
+
 /* Dark mode switch  - starts */
 
 
